@@ -47,6 +47,7 @@ export default abstract class Entity {
   toJSON() {
     let json: Record<string, any> = { entityId: this.entityId }
     for (let key in this.schemaDef) {
+      if (this.schemaDef[key].hidden) continue;
       json[key] = (this as Record<string, any>)[key];
     }
     return json;
