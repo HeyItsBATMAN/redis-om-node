@@ -1,4 +1,5 @@
 import Repository from '../repository/repository';
+import { EntityConstructor } from '../entity/entity';
 
 /** Base interface for all fields. */
 export interface Field {
@@ -22,10 +23,8 @@ export interface Seperatable {
 
 /** Base interface for Fields that can be populated */
 export interface WithRepository {
-  /**
-   * The given repository will be used to populate this field.
-   */
-  repository: Repository<any>;
+  /** EntityConstructor of the repository that will be used to populate instances of Entity */
+  repository: EntityConstructor<any>;
 }
 
 /** A field representing a number. */

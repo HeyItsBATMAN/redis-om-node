@@ -1,4 +1,5 @@
 import { SchemaDefinition } from "..";
+import Repository from '../repository/repository'
 
 /**
  * A JavaScript object containing the underlying data of an {@link Entity}.
@@ -60,10 +61,14 @@ export default abstract class Entity {
       const value = (this as Record<string, any>)[field];
       if (fieldType === 'relation') {
         if (!value || typeof value !== 'string') continue;
-        const fetchResult = await fieldDef.repository.fetch(value);
+        const repository = Repository.get(fieldDef.repository);
+        if (!repository) continue;
+        const fetchResult = await repository.fetch(value);
         this.entityData[field] = fetchResult.toJSON();
       } else if (fieldType === 'relation-array') {
-        const fetchResults = await Promise.all(value.map((v: string) => fieldDef.repository.fetch(v)))
+        const repository = Repository.get(fieldDef.repository);
+        if (!repository) continue;
+        const fetchResults = await Promise.all(value.map((v: string) => repository.fetch(v)))
         this.entityData[field] = fetchResults.map((v: any) => v.toJSON() as any);
       }
     }
