@@ -1,3 +1,5 @@
+import Repository from '../repository/repository';
+
 /** Base interface for all fields. */
 export interface Field {
   /**
@@ -47,11 +49,21 @@ export interface ArrayField extends Field {
    * array. If your ArrayField contains this separator, this can cause problems. You can change it
    * here to avoid those problems. Defaults to `|`.
    */
-   separator?: string;
+  separator?: string;
+}
+
+/** A field representing a relation to an entity from another repository via entityId */
+export interface RelationField extends Field {
+  type: 'relation';
+
+  /**
+   * The given repository will be used to populate this field.
+   */
+  repository: Repository<any>;
 }
 
 /** Contains instructions telling how to map a property on an {@link Entity} to Redis. */
-export type FieldDefinition = NumericField | StringField | BooleanField | ArrayField;
+export type FieldDefinition = NumericField | StringField | BooleanField | ArrayField | RelationField;
 
 /**
 * Group of {@link FieldDefinition}s that define the schema for an {@link Entity}.

@@ -46,7 +46,7 @@ export default class SchemaBuilder<TEntity extends Entity> {
     if (fieldType === 'array')
       schemaEntry.push('TAG', 'SEPARATOR', (fieldDef as ArrayField).separator ?? '|');
 
-    if (fieldType === 'string') {
+    if (fieldType === 'string' || fieldType === 'relation') {
       if ((fieldDef as StringField).textSearch)
         schemaEntry.push('TEXT');
       else
@@ -69,7 +69,7 @@ export default class SchemaBuilder<TEntity extends Entity> {
     if (fieldType === 'boolean') schemaEntry.push('TAG');
     if (fieldType === 'number') schemaEntry.push('NUMERIC');
     if (fieldType === 'array') schemaEntry.push('TAG');
-    if (fieldType === 'string') {
+    if (fieldType === 'string' || fieldType === 'relation') {
       if ((fieldDef as StringField).textSearch) schemaEntry.push('TEXT');
       else schemaEntry.push('TAG', 'SEPARATOR', (fieldDef as StringField).separator ?? '|');
     }

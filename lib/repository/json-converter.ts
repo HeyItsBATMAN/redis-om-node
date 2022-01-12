@@ -1,5 +1,5 @@
 import { JsonData } from "../client";
-import { EntityData } from '../entity/entity';
+import Entity, { EntityData } from '../entity/entity';
 import { SchemaDefinition } from "../schema/schema-definitions";
 
 export default class JsonConverter {
@@ -11,6 +11,11 @@ export default class JsonConverter {
   }
 
   toJsonData(entityData: EntityData): JsonData {
+    for (let field in this.schemaDef) {
+      if (this.schemaDef[field].type !== 'relation') continue;
+      if (typeof entityData[field] === 'string') continue;
+      entityData[field] = ((entityData[field] as unknown) as Entity).entityId;
+    }
     return entityData;
   }
 
