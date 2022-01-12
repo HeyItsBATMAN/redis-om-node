@@ -1,5 +1,5 @@
 import Schema from "../schema/schema";
-import Client, { CreateIndexOptions } from "../client";
+import Client, { CreateIndexOptions, JsonData, HashData } from "../client";
 import Entity from '../entity/entity';
 import Search from '../search/search';
 
@@ -128,7 +128,6 @@ export default class Repository<TEntity extends Entity> {
    * @returns The ID of the Entity just saved.
    */
   async save(entity: TEntity): Promise<string> {
-
     let key = this.makeKey(entity.entityId);
 
     if (Object.keys(entity.entityData).length === 0) {
@@ -145,6 +144,17 @@ export default class Repository<TEntity extends Entity> {
     }
 
     return entity.entityId;
+  }
+
+  prepareForTransaction(entity: Entity) {
+    const key = this.makeKey(entity.entityId);
+    const {dataStructure} = this.schema;
+
+    const data = dataStructure === 'JSON'
+      ? this.jsonConverter.toJsonData(entity.entityData)
+      : this.hashConverter.toHashData(entity.entityData);
+
+    return {key, data, dataStructure};
   }
 
   /**

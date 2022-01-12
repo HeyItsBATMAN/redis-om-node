@@ -9,7 +9,7 @@ import { SchemaOptions } from "./schema/schema-options";
 import Search, { SubSearchFunction } from "./search/search";
 import Where from "./search/where";
 import WhereField from "./search/where-field";
-
+import Transaction from './transaction/transaction';
 
 export {
   Client, SearchDataStructure, HashData, JsonData, 
@@ -19,5 +19,6 @@ export {
   Schema, SchemaDefinition, SchemaOptions,
   FieldDefinition, Field, NumericField, StringField, BooleanField, ArrayField, IdStrategy, StopWordOptions,
   Search, SubSearchFunction,
-  Where, WhereField
+  Where, WhereField,
+  Transaction
 };

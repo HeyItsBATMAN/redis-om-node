@@ -1,6 +1,8 @@
 import { createClient } from '@node-redis/client';
 
-import { RedisClientType, } from '@node-redis/client/dist/lib/client';
+import { RedisClientType } from '@node-redis/client/dist/lib/client';
+import { RedisClientMultiCommandType } from '@node-redis/client/dist/lib/client/multi-command';
+import { TuplesObject } from '@node-redis/client/dist/lib/commands/generic-transformers';
 import { RedisScripts, RedisModules } from '@node-redis/client/dist/lib/commands';
 import RedisError from '../errors';
 
@@ -27,6 +29,10 @@ export default class RedisShim {
 
   hgetall(key: string) {
     return this.redis.hGetAll(key);
+  }
+
+  multi() {
+    return this.redis.multi();
   }
 
   async hsetall(key: string, data: { [key: string]: string }) {

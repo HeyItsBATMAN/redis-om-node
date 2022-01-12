@@ -5,6 +5,9 @@ import Repository from './repository/repository';
 import Schema from './schema/schema';
 import RedisError from './errors';
 
+import { RedisClientMultiCommandType } from '@node-redis/client/dist/lib/client/multi-command';
+import { RedisScripts, RedisModules } from '@node-redis/client/dist/lib/commands';
+
 /**
  * Alias for any old JavaScript object.
  * @internal
@@ -160,6 +163,12 @@ export default class Client {
     this.validateShimOpen();
     let json = JSON.stringify(data);
     await this.shim!.execute<string>([ 'JSON.SET', key, '.', json ]);
+  }
+
+  /** @internal */
+  multi() {
+    this.validateShimOpen();
+    return this.shim!.multi();
   }
 
   /**
