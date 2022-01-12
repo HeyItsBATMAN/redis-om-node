@@ -5,6 +5,11 @@ export interface Field {
    * {@link SchemaDefinition}. Overrides the Redis key name if set.
    */
   alias?: string;
+
+  /**
+   * Fields that are hidden will be ignored by the `toJSON` method of an `Entity`
+   */
+  hidden?: boolean;
 }
 
 /** A field representing a number. */
