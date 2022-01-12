@@ -131,6 +131,12 @@ export default class Schema<TEntity extends Entity> {
               } else {
                 throw new RedisError(`Attempted to save type of 'relation' at property ${field} but found no entityId`);
               }
+            } else if (fieldType === 'relation-array') {
+              if (isArray) {
+                this.entityData[fieldAlias] = value.map((v: Entity) => v.entityId);
+              } else {
+                throw new RedisError(`Expected array of entityIds for type 'relation-array' but got ${value} instead`);
+              }
             } else {
               throw new RedisError(`Property '${field}' expected type of '${fieldType}' but received type of '${valueType}'.`);
             }
@@ -156,7 +162,7 @@ export default class Schema<TEntity extends Entity> {
 
   private validateFieldDef(field: string) {
     let fieldDef: FieldDefinition = this.definition[field];
-    if (!['array', 'boolean', 'number', 'string', 'relation'].includes(fieldDef.type))
-      throw Error(`The field '${field}' is configured with a type of '${fieldDef.type}'. Valid types include 'array', 'boolean', 'number', 'string' and 'relation'.`);
+    if (!['array', 'boolean', 'number', 'string', 'relation', 'relation-array'].includes(fieldDef.type))
+      throw Error(`The field '${field}' is configured with a type of '${fieldDef.type}'. Valid types include 'array', 'boolean', 'number', 'string', 'relation' and 'relation-array'.`);
   }
 }

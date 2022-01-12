@@ -12,9 +12,17 @@ export default class JsonConverter {
 
   toJsonData(entityData: EntityData): JsonData {
     for (let field in this.schemaDef) {
-      if (this.schemaDef[field].type !== 'relation') continue;
-      if (typeof entityData[field] === 'string') continue;
-      entityData[field] = ((entityData[field] as unknown) as Entity).entityId;
+      const fieldType = this.schemaDef[field].type;
+      const value = entityData[field];
+      if (fieldType === 'relation') {
+        // If we encounter a string, assume it's already an entityId
+        if (typeof entityData[field] === 'string') continue;
+        entityData[field] = ((entityData[field] as unknown) as Entity).entityId;
+      } else if (fieldType === 'relation-array') {
+        if (Array.isArray(value)) {
+          entityData[field] = value.map((v: string | Entity) => typeof(v) === 'string' ? v : v.entityId);
+        }
+      }
     }
     return entityData;
   }
