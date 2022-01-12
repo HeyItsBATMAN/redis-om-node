@@ -1,6 +1,7 @@
-import { EntityData } from '../entity/entity';
+import Entity, { EntityData } from '../entity/entity';
 import { ArrayField, SchemaDefinition } from "../schema/schema-definitions";
 import { HashData } from '../client';
+import { RedisError } from '..';
 
 export default class HashConverter {
   private schemaDef: SchemaDefinition
@@ -14,12 +15,20 @@ export default class HashConverter {
 
     for (let field in this.schemaDef) {
       let value = entityData[field];
-      if (value !== undefined) {
-        let fieldDef = this.schemaDef[field];
-        if (fieldDef.type === 'number') hashData[field] = value.toString();
-        if (fieldDef.type === 'boolean') hashData[field] = value ? '1': '0';
-        if (fieldDef.type === 'array') hashData[field] = (value as string[]).join(fieldDef.separator ?? '|');
-        if (fieldDef.type === 'string') hashData[field] = value;
+      const typeValue = typeof(value);
+      if (value === undefined) continue;
+      let fieldDef = this.schemaDef[field];
+      if (fieldDef.type === 'number') hashData[field] = value.toString();
+      if (fieldDef.type === 'boolean') hashData[field] = value ? '1': '0';
+      if (fieldDef.type === 'array') hashData[field] = (value as string[]).join(fieldDef.separator ?? '|');
+      if (fieldDef.type === 'relation-array') {
+        hashData[field] = (value as Array<string | Entity>).map(v => typeof(v) === 'string' ? v : v.entityId).join(fieldDef.separator ?? '|');
+      }
+      if (fieldDef.type === 'string') hashData[field] = value;
+      if (fieldDef.type === 'relation') {
+        if (typeValue === 'string') hashData[field] = value;
+        else if (typeValue === 'object') hashData[field] = (value as unknown as Entity).entityId;
+        else throw new RedisError(`Value of type ${typeValue} does not match expected types 'object' or 'string' needed for field type 'relation'`);
       }
     }
     return hashData;
@@ -35,8 +44,8 @@ export default class HashConverter {
         let fieldDef = this.schemaDef[field]
         if (fieldDef.type === 'number') this.addNumber(field, entityData, value);
         if (fieldDef.type === 'boolean') this.addBoolean(field, entityData, value);
-        if (fieldDef.type === 'array') this.addArray(field, fieldDef as ArrayField, entityData, value);
-        if (fieldDef.type === 'string') this.addString(field, entityData, value);
+        if (fieldDef.type === 'array' || fieldDef.type === 'relation-array') this.addArray(field, fieldDef as ArrayField, entityData, value);
+        if (fieldDef.type === 'string' || fieldDef.type === 'relation') this.addString(field, entityData, value);
       }
     }
 

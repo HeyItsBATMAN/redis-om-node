@@ -1,5 +1,5 @@
 import { JsonData } from "../client";
-import { EntityData } from '../entity/entity';
+import Entity, { EntityData } from '../entity/entity';
 import { SchemaDefinition } from "../schema/schema-definitions";
 
 export default class JsonConverter {
@@ -11,6 +11,19 @@ export default class JsonConverter {
   }
 
   toJsonData(entityData: EntityData): JsonData {
+    for (let field in this.schemaDef) {
+      const fieldType = this.schemaDef[field].type;
+      const value = entityData[field];
+      if (fieldType === 'relation') {
+        // If we encounter a string, assume it's already an entityId
+        if (typeof entityData[field] === 'string') continue;
+        entityData[field] = ((entityData[field] as unknown) as Entity).entityId;
+      } else if (fieldType === 'relation-array') {
+        if (Array.isArray(value)) {
+          entityData[field] = value.map((v: string | Entity) => typeof(v) === 'string' ? v : v.entityId);
+        }
+      }
+    }
     return entityData;
   }
 

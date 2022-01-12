@@ -1,6 +1,6 @@
 import Schema from "../schema/schema";
 import Client, { CreateIndexOptions } from "../client";
-import Entity from '../entity/entity';
+import Entity, { EntityConstructor } from '../entity/entity';
 import Search from '../search/search';
 
 import { EntityData } from '../entity/entity';
@@ -57,6 +57,9 @@ export default class Repository<TEntity extends Entity> {
   private jsonConverter: JsonConverter;
   private hashConverter: HashConverter;
 
+  /** A Map of all created Repositories. This is used when populating entities */
+  private static Map = new Map<EntityConstructor<any>, Repository<any>>();
+
   /**
    * Constructs a new Repository.
    * @template TEntity The type of {@link Entity} that this repository manages.
@@ -64,10 +67,15 @@ export default class Repository<TEntity extends Entity> {
    * @param client An open {@link Client}.
    */
   constructor(schema: Schema<TEntity>, client: Client) {
+    Repository.Map.set(schema.entityCtor, this);
     this.schema = schema;
     this.client = client;
     this.jsonConverter = new JsonConverter(this.schema.definition);
     this.hashConverter = new HashConverter(this.schema.definition);
+  }
+
+  static get<T extends Entity>(entityCtor: EntityConstructor<T>) {
+    return Repository.Map.get(entityCtor) as Repository<T> | undefined;
   }
 
   /**
