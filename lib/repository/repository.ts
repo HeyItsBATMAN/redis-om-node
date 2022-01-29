@@ -75,7 +75,13 @@ export default class Repository<TEntity extends Entity> {
   }
 
   static get<T extends Entity>(entityCtor: EntityConstructor<T>) {
-    return Repository.Map.get(entityCtor) as Repository<T> | undefined;
+    const repo = Repository.Map.get(entityCtor) as Repository<T> | undefined;
+    if (!repo) throw new Error(`No repository found for ${entityCtor.name}`);
+    return repo;
+  }
+
+  async all() {
+    return this.search().all();
   }
 
   /**

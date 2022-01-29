@@ -134,7 +134,7 @@ class Search {
         let fieldDef = this.schema.definition[field];
         if (fieldDef === undefined)
             throw new Error(`The field '${field}' is not part of the schema.`);
-        if (fieldDef.type === 'array')
+        if (fieldDef.type === 'array' || fieldDef.type === 'relation-array')
             return new where_array_1.default(this, field);
         if (fieldDef.type === 'boolean' && this.schema.dataStructure === 'HASH')
             return new where_boolean_1.WhereHashBoolean(this, field);
@@ -145,6 +145,8 @@ class Search {
         if (fieldDef.type === 'string' && fieldDef.textSearch === true)
             return new where_text_1.default(this, field);
         if (fieldDef.type === 'string' && fieldDef.textSearch !== true)
+            return new where_string_1.default(this, field);
+        if (fieldDef.type === 'relation')
             return new where_string_1.default(this, field);
         throw new Error(`The field type of '${fieldDef.type}' is not a valid field type. Valid types include 'array', 'boolean', 'number', and 'string'.`);
     }

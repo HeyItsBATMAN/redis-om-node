@@ -10,16 +10,21 @@ class Entity {
         this.entityId = id;
         this.entityData = data;
     }
-    toJSON() {
+    toJSON(opts) {
+        opts = { clean: true, hide: true, ...opts };
+        const { clean, hide } = opts;
         let json = { entityId: this.entityId };
         for (let key in this.schemaDef) {
-            if (this.schemaDef[key].hidden)
+            if (hide && this.schemaDef[key].hidden)
                 continue;
-            json[key] = this[key];
+            const value = this[key];
+            if (clean && (value === undefined || value === null))
+                continue;
+            json[key] = value;
         }
         return json;
     }
-    async populate(fields) {
+    async populate(fields, jsonOpts) {
         for (const field of fields) {
             if (!this.schemaDef.hasOwnProperty(field))
                 continue;
@@ -33,14 +38,17 @@ class Entity {
                 if (!repository)
                     continue;
                 const fetchResult = await repository.fetch(value);
-                this.entityData[field] = fetchResult.toJSON();
+                this.entityData[field] = fetchResult.toJSON(jsonOpts);
             }
             else if (fieldType === 'relation-array') {
                 const repository = repository_1.default.get(fieldDef.repository);
                 if (!repository)
                     continue;
-                const fetchResults = await Promise.all(value.map((v) => repository.fetch(v)));
-                this.entityData[field] = fetchResults.map((v) => v.toJSON());
+                const promises = value.map((v) => repository.fetch(v));
+                const fetchResults = await Promise.all(promises);
+                if (fetchResults.length === 0)
+                    continue;
+                this.entityData[field] = fetchResults.map((v) => v.toJSON(jsonOpts));
             }
         }
     }

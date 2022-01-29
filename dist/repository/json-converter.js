@@ -8,6 +8,8 @@ class JsonConverter {
         for (let field in this.schemaDef) {
             const fieldType = this.schemaDef[field].type;
             const value = entityData[field];
+            if (!value)
+                continue;
             if (fieldType === 'relation') {
                 if (typeof entityData[field] === 'string')
                     continue;

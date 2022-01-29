@@ -15,7 +15,13 @@ class Repository {
         this.hashConverter = new hash_converter_1.default(this.schema.definition);
     }
     static get(entityCtor) {
-        return Repository.Map.get(entityCtor);
+        const repo = Repository.Map.get(entityCtor);
+        if (!repo)
+            throw new Error(`No repository found for ${entityCtor.name}`);
+        return repo;
+    }
+    async all() {
+        return this.search().all();
     }
     async createIndex() {
         let options = {

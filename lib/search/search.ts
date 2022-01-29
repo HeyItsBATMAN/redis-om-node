@@ -259,7 +259,7 @@ export default class Search<TEntity extends Entity> {
 
     if (fieldDef === undefined) throw new Error(`The field '${field}' is not part of the schema.`);
 
-    if (fieldDef.type === 'array')
+    if (fieldDef.type === 'array' || fieldDef.type === 'relation-array')
       return new WhereArray<TEntity>(this, field);
 
     if (fieldDef.type === 'boolean' && this.schema.dataStructure === 'HASH')
@@ -275,6 +275,9 @@ export default class Search<TEntity extends Entity> {
       return new WhereText<TEntity>(this, field);
 
     if (fieldDef.type === 'string' && fieldDef.textSearch !== true)
+      return new WhereString<TEntity>(this, field);
+
+    if (fieldDef.type === 'relation')
       return new WhereString<TEntity>(this, field);
 
     // @ts-ignore: This is a trap for JavaScript

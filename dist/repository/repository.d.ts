@@ -10,7 +10,8 @@ export default class Repository<TEntity extends Entity> {
     private hashConverter;
     private static Map;
     constructor(schema: Schema<TEntity>, client: Client);
-    static get<T extends Entity>(entityCtor: EntityConstructor<T>): Repository<T> | undefined;
+    static get<T extends Entity>(entityCtor: EntityConstructor<T>): Repository<T>;
+    all(): Promise<TEntity[]>;
     createIndex(): Promise<void>;
     dropIndex(): Promise<void>;
     createEntity(data?: EntityCreationData): TEntity;

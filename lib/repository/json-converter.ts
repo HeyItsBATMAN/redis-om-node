@@ -14,6 +14,7 @@ export default class JsonConverter {
     for (let field in this.schemaDef) {
       const fieldType = this.schemaDef[field].type;
       const value = entityData[field];
+      if (!value) continue;
       if (fieldType === 'relation') {
         // If we encounter a string, assume it's already an entityId
         if (typeof entityData[field] === 'string') continue;

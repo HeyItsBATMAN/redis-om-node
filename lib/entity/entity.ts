@@ -1,5 +1,11 @@
 import { SchemaDefinition } from "..";
 import Repository from '../repository/repository'
+import JsonConverter from '../repository/json-converter'
+
+export interface ToJSONOptions {
+  clean: boolean;
+  hide: boolean;
+}
 
 /**
  * A JavaScript object containing the underlying data of an {@link Entity}.
@@ -45,16 +51,20 @@ export default abstract class Entity {
     this.entityData = data;
   }
 
-  toJSON() {
+  toJSON(opts?: ToJSONOptions) {
+    opts = { clean: true, hide: true, ...opts};
+    const { clean, hide }= opts;
     let json: Record<string, any> = { entityId: this.entityId }
     for (let key in this.schemaDef) {
-      if (this.schemaDef[key].hidden) continue;
-      json[key] = (this as Record<string, any>)[key];
+      if (hide && this.schemaDef[key].hidden) continue;
+      const value = (this as Record<string, any>)[key];
+      if (clean && (value === undefined || value === null)) continue;
+      json[key] = value;
     }
     return json;
   }
 
-  async populate(fields: string[]) {
+  async populate(fields: string[], jsonOpts?: ToJSONOptions) {
     for (const field of fields) {
       if (!this.schemaDef.hasOwnProperty(field)) continue;
       const fieldDef = this.schemaDef[field];
@@ -65,12 +75,14 @@ export default abstract class Entity {
         const repository = Repository.get(fieldDef.repository);
         if (!repository) continue;
         const fetchResult = await repository.fetch(value);
-        this.entityData[field] = fetchResult.toJSON();
+        this.entityData[field] = fetchResult.toJSON(jsonOpts) as any;
       } else if (fieldType === 'relation-array') {
         const repository = Repository.get(fieldDef.repository);
         if (!repository) continue;
-        const fetchResults = await Promise.all(value.map((v: string) => repository.fetch(v)))
-        this.entityData[field] = fetchResults.map((v: any) => v.toJSON() as any);
+        const promises = (value as string[]).map((v: string) => repository.fetch(v));
+        const fetchResults = await Promise.all(promises);
+        if (fetchResults.length === 0) continue;
+        this.entityData[field] = fetchResults.map((v: any) => v.toJSON(jsonOpts));
       }
     }
   }
